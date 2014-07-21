@@ -1,0 +1,7 @@
+{
+    "mpdPort": 6600,
+    "mpdHost": "localhost",
+    "mpdPlaylist": "Running",
+    "volMax": 100,
+    "volRiseTime": 10000
+}
