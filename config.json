@@ -1,7 +1,11 @@
 {
     "mpdPort": 6600,
     "mpdHost": "localhost",
-    "mpdPlaylist": "Running",
+    "mpdPlaylist": "Wakeup",
     "volMax": 100,
-    "volRiseTime": 10000
+    "volRiseTime": 18000,
+    "alarms": [
+        "00 55 19 * * *",
+        "00 50 6 * * *"
+    ]
 }

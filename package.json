@@ -4,11 +4,19 @@
   "description": "A simple alarm clock with mpd",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon index.js"
   },
   "author": "Terminal Pixel",
   "license": "ISC",
   "dependencies": {
+    "angular": "^1.2.21",
+    "body-parser": "^1.6.5",
+    "browserify-middleware": "^3.0.1",
+    "cron": "^1.0.4",
+    "express": "^4.8.5",
     "mpd": "^1.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.2.1"
   }
 }
