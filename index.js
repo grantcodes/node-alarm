@@ -8,6 +8,8 @@ var config = require('./config.json')
   , fs = require('fs');
 
 var app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
 var client = mpd.connect({
     port: config.mpdPort,
@@ -34,13 +36,19 @@ var volRise = function() {
 }
 
 var loadAlarms = function() {
+    for (var i = alarms.length - 1; i >=0; i--) {
+        alarms[i].stop();
+    }
+
     alarms = [];
+
+
     for (var i = config.alarms.length - 1; i >= 0; i--) {
         var alarm = config.alarms[i];
         console.log('setting alarm ' + alarm);
         try {
             alarms[i] = new cronJob(
-                config.alarms[i],
+                alarm,
                 function() {
                     console.log('Wakey Wakey!');
                     console.log('Running alarm ' + alarm);
@@ -67,6 +75,7 @@ var loadAlarms = function() {
                         console.log(msg);
                     });
                     volRise();
+                    io.emit('alarm', { alarm: alarm })
                 },
                 function(){
                     console.log( 'alarm run' );
