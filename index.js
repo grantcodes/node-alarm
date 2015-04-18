@@ -1,19 +1,24 @@
-var config = require('./config.json')
-  , browserify = require('browserify-middleware')
+var browserify = require('browserify-middleware')
   , mpd = require('mpd')
   , cmd = mpd.cmd
   , cronJob = require('cron').CronJob
   , express = require('express')
   , bodyParser = require('body-parser')
-  , fs = require('fs');
+  , fs = require('fs')
+  , nconf = require('nconf');
+
+// Config file
+nconf.argv()
+    .env()
+    .file({ file: './config.json' });
 
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var client = mpd.connect({
-    port: config.mpdPort,
-    host: config.mpdHost
+    port: nconf.get('mpdPort'),
+    host: nconf.get('mpdHost')
 });
 
 var alarms = [];
@@ -21,15 +26,15 @@ var alarms = [];
 
 var volRise = function() {
     var vol = 0;
-    var interval = config.volRiseTime / config.volMax;
-    console.log('Rasing volume to ' + config.volMax);
+    var interval = nconf.get('volRiseTime') / nconf.get('volMax');
+    console.log('Rasing volume to ' + nconf.get('volMax'));
     var volSetter = setInterval(function(){
         vol++;
         var volCommand = cmd('setvol', [vol]);
         client.sendCommand(volCommand, function(err, msg) {
             if (err) throw err;
         });
-        if (vol >= config.volMax) {
+        if (vol >= nconf.get('volMax')) {
             clearInterval(volSetter);
         }
     }, interval);
@@ -43,8 +48,8 @@ var loadAlarms = function() {
     alarms = [];
 
 
-    for (var i = config.alarms.length - 1; i >= 0; i--) {
-        var alarm = config.alarms[i];
+    for (var i = nconf.get('alarms').length - 1; i >= 0; i--) {
+        var alarm = nconf.get('alarms')[i];
         console.log('setting alarm ' + alarm);
         try {
             alarms[i] = new cronJob(
@@ -60,8 +65,8 @@ var loadAlarms = function() {
                         if (err) throw err;
                         console.log(msg);
                     });
-                    console.log('Loading playlist ' + config.mpdPlaylist);
-                    client.sendCommand(cmd('load', [config.mpdPlaylist]), function(err, msg) {
+                    console.log('Loading playlist ' + nconf.get('mpdPlaylist'));
+                    client.sendCommand(cmd('load', [nconf.get('mpdPlaylist')]), function(err, msg) {
                         if (err) throw err;
                         console.log(msg);
                     });
@@ -83,7 +88,7 @@ var loadAlarms = function() {
                 true // Start the job now
             );
         } catch(ex) {
-            console.log('invalid cron value: ' +  config.alarms[i]);
+            console.log('invalid cron value: ' +  nconf.get('alarms')[i]);
         }
     };
 }
@@ -104,15 +109,17 @@ app.use('/', express.static(__dirname + '/static'));
 
 
 app.get('/alarms', function(req, res){
-    res.send(config.alarms);
+    res.send(nconf.get('alarms'));
 });
 
 app.use( bodyParser.json() );
 
 app.post('/alarms', function(req, res){
     var alarm = req.body.alarm;
-    config.alarms.push(alarm);
-    fs.writeFile('./config.json', JSON.stringify(config, null, 4), function(err){
+    var alarms = nconf.get('alarms');
+    alarms.push(alarm);
+    nconf.set('alarms', alarms);
+    nconf.save(function(err){
         if(err){
             res.send(false);
         } else {
@@ -126,8 +133,10 @@ app.post('/alarms', function(req, res){
 app.delete('/alarms/:alarm_index', function(req, res){
     var i = req.params.alarm_index;
     console.log(i);
-    config.alarms.splice(i, 1);
-    fs.writeFile('./config.json', JSON.stringify(config, null, 4), function(err){
+    var alarms = nconf.get('alarms');
+    alarms.splice(i, 1);
+    nconf.set('alarms', alarms);
+    nconf.save(function(err){
         if(err){
             res.send(false);
         } else {
