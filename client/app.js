@@ -41,7 +41,25 @@ app.controller('AlarmCtrl', function ($scope, $location, $http) {
 
     this.update = function(){
         console.log(this);
-    }
+    };
+
+    this.on = function(){
+        $http.post('/alarm/on')
+        .success(function(data, status, headers){
+            if (data){
+                console.log('alarm on');
+            }
+        });
+    };
+
+    this.off = function(){
+        $http.post('/alarm/off')
+        .success(function(data, status, headers){
+            if (data){
+                console.log('alarm off');
+            }
+        });
+    };
 
     this.delete = function(i){
         var self = this;
@@ -51,6 +69,6 @@ app.controller('AlarmCtrl', function ($scope, $location, $http) {
                 self.alarms.splice(i, 1);
             }
         });
-    }
+    };
 
 });

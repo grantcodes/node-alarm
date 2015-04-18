@@ -38,7 +38,36 @@ var volRise = function() {
             clearInterval(volSetter);
         }
     }, interval);
-}
+};
+
+var alarmOn = function(alarm) {
+    console.log('Wakey Wakey!');
+    console.log('Running alarm ' + alarm);
+    client.sendCommand(cmd('stop', []), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+    client.sendCommand(cmd('clear', []), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+    console.log('Loading playlist ' + nconf.get('mpdPlaylist'));
+    client.sendCommand(cmd('load', [nconf.get('mpdPlaylist')]), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+
+    client.sendCommand(cmd('shuffle', []), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+    client.sendCommand(cmd('play', []), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+    volRise();
+    io.emit('alarm', { alarm: alarm })
+};
 
 var loadAlarms = function() {
     for (var i = alarms.length - 1; i >=0; i--) {
@@ -55,32 +84,7 @@ var loadAlarms = function() {
             alarms[i] = new cronJob(
                 alarm,
                 function() {
-                    console.log('Wakey Wakey!');
-                    console.log('Running alarm ' + alarm);
-                    client.sendCommand(cmd('stop', []), function(err, msg) {
-                        if (err) throw err;
-                        console.log(msg);
-                    });
-                    client.sendCommand(cmd('clear', []), function(err, msg) {
-                        if (err) throw err;
-                        console.log(msg);
-                    });
-                    console.log('Loading playlist ' + nconf.get('mpdPlaylist'));
-                    client.sendCommand(cmd('load', [nconf.get('mpdPlaylist')]), function(err, msg) {
-                        if (err) throw err;
-                        console.log(msg);
-                    });
-
-                    client.sendCommand(cmd('shuffle', []), function(err, msg) {
-                        if (err) throw err;
-                        console.log(msg);
-                    });
-                    client.sendCommand(cmd('play', []), function(err, msg) {
-                        if (err) throw err;
-                        console.log(msg);
-                    });
-                    volRise();
-                    io.emit('alarm', { alarm: alarm })
+                    alarmOn(alarm);
                 },
                 function(){
                     console.log( 'alarm run' );
@@ -127,7 +131,6 @@ app.post('/alarms', function(req, res){
             res.send(true);
         }
     });
-
 });
 
 app.delete('/alarms/:alarm_index', function(req, res){
@@ -144,7 +147,19 @@ app.delete('/alarms/:alarm_index', function(req, res){
             res.send(true);
         }
     });
+});
 
+app.post('/alarm/on', function(req, res){
+    alarmOn('manual alarm')
+    res.send(true);
+});
+
+app.post('/alarm/off', function(req, res){
+    client.sendCommand(cmd('stop', []), function(err, msg) {
+        if (err) throw err;
+        console.log(msg);
+    });
+    res.send(true);
 });
 
 var server = app.listen(3000, function() {
