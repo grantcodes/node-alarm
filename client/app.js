@@ -1,8 +1,4 @@
 require('angular');
-var config = require('../config.json');
-
-console.log(config);
-console.log(angular);
 
 var app = angular.module('app', []);
 
@@ -19,8 +15,19 @@ var app = angular.module('app', []);
 
 app.controller('AlarmCtrl', function ($scope, $location, $http) {
 
-    this.alarms = config.alarms;
+    this.alarms = [];
     this.newAlarm = '';
+
+    this.init = function() {
+        var self = this;
+        $http.get('/alarms')
+        .success(function(data, status, headers){
+            if (data){
+                self.alarms = data;
+            }
+        });
+    };
+    this.init();
 
     this.new = function(){
         var self = this;

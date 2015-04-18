@@ -12,6 +12,15 @@ nconf.argv()
     .env()
     .file({ file: __dirname + '/config.json' });
 
+nconf.defaults({
+    'mpdPort': 6600,
+    'mpdHost': 'localhost',
+    'mpdPlaylist': 'Wakeup',
+    'volMax': 100,
+    'volRiseTime': 18000,
+    'alarms': ['00 50 6 * * *']
+});
+
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
