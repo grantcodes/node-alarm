@@ -10,7 +10,7 @@ var browserify = require('browserify-middleware')
 // Config file
 nconf.argv()
     .env()
-    .file({ file: './config.json' });
+    .file({ file: __dirname + '/config.json' });
 
 var app = express();
 var http = require('http').Server(app);
@@ -107,7 +107,7 @@ client.on('error', function(err){
 });
 
 
-app.use('/js', browserify('./client'))
+app.use('/js', browserify(__dirname + '/client'))
 
 app.use('/', express.static(__dirname + '/static'));
 
