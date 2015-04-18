@@ -39,7 +39,7 @@ app.controller('AlarmCtrl', function ($scope, $location, $http) {
             $http.post('/alarms', data)
             .success(function(data, status, headers){
                 if(data){
-                    config.alarms.push(alarm);
+                    self.alarms.push(alarm);
                     self.newAlarm = '';
                 }
             });

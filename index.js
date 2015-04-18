@@ -75,7 +75,7 @@ var alarmOn = function(alarm) {
         console.log(msg);
     });
     volRise();
-    io.emit('alarm', { alarm: alarm })
+    io.emit('alarm', { alarm: alarm });
 };
 
 var loadAlarms = function() {
@@ -103,8 +103,8 @@ var loadAlarms = function() {
         } catch(ex) {
             console.log('invalid cron value: ' +  nconf.get('alarms')[i]);
         }
-    };
-}
+    }
+};
 
 client.on('ready', function() {
     loadAlarms();
@@ -116,7 +116,7 @@ client.on('error', function(err){
 });
 
 
-app.use('/js', browserify(__dirname + '/client'))
+app.use('/js', browserify(__dirname + '/client'));
 
 app.use('/', express.static(__dirname + '/static'));
 
@@ -159,7 +159,7 @@ app.delete('/alarms/:alarm_index', function(req, res){
 });
 
 app.post('/alarm/on', function(req, res){
-    alarmOn('manual alarm')
+    alarmOn('manual alarm');
     res.send(true);
 });
 

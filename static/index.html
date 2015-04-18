@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Node Alarm</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
     <script src="/js/app.js"></script>
 </head>
 <body>
     <h1>Node Alarm</h1>
 
     <div class="alarms" ng-controller="AlarmCtrl as alarm">
-        <ul>
+        <h2>Alarms</h2>
+        <ul class="alarms-list">
             <li ng-repeat="cron in alarm.alarms track by $index">
                 <input type="text" ng-model="cron" readonly>
                 <!-- <button ng-click="update()">Update</button> -->
                 <button ng-click="alarm.delete($index)">Delete</button>
             </li>
         </ul>
-        <form ng-submit="alarm.new()">
+        <form class="add-alarm" ng-submit="alarm.new()">
             <input type="text" placeholder="New alarm" ng-model="alarm.newAlarm">
             <button type="submit">Add alarm</button>
         </form>
-        <a href="#alarmOn" class="button" ng-click="alarm.on()">Start Alarm</a>
-        <a href="#alarmOff" class="button" ng-click="alarm.off()">Stop Alarm</a>
+        <button ng-click="alarm.on()">Start Alarm</button>
+        <button ng-click="alarm.off()">Stop Alarm</button>
     </div>
 </body>
 </html>
