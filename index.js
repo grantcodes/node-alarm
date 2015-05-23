@@ -1,7 +1,7 @@
-var browserify = require('browserify-middleware')
-  , mpd = require('mpd')
+var
+    mpd = require('mpd')
   , cmd = mpd.cmd
-  , cronJob = require('cron').CronJob
+  , later = require('later')
   , express = require('express')
   , bodyParser = require('body-parser')
   , fs = require('fs')
@@ -18,7 +18,7 @@ nconf.defaults({
     'mpdPlaylist': 'Wakeup',
     'volMax': 100,
     'volRiseTime': 18000,
-    'alarms': ['00 50 6 * * *']
+    'alarms': ['50 6 * * *']
 });
 
 var app = express();
@@ -29,6 +29,8 @@ var client = mpd.connect({
     port: nconf.get('mpdPort'),
     host: nconf.get('mpdHost')
 });
+
+later.date.localTime();
 
 var alarms = [];
 
@@ -80,7 +82,7 @@ var alarmOn = function(alarm) {
 
 var loadAlarms = function() {
     for (var i = alarms.length - 1; i >=0; i--) {
-        alarms[i].stop();
+        alarms[i].clear();
     }
 
     alarms = [];
@@ -90,16 +92,9 @@ var loadAlarms = function() {
         var alarm = nconf.get('alarms')[i];
         console.log('setting alarm ' + alarm);
         try {
-            alarms[i] = new cronJob(
-                alarm,
-                function() {
-                    alarmOn(alarm);
-                },
-                function(){
-                    console.log( 'alarm run' );
-                },
-                true // Start the job now
-            );
+            var schedule = later.parse.cron(alarm);
+            later.schedule(schedule);
+            alarms[i] = later.setInterval(alarmOn, schedule);
         } catch(ex) {
             console.log('invalid cron value: ' +  nconf.get('alarms')[i]);
         }
@@ -116,9 +111,8 @@ client.on('error', function(err){
 });
 
 
-app.use('/js', browserify(__dirname + '/client'));
-
 app.use('/', express.static(__dirname + '/static'));
+app.use('/vendor', express.static(__dirname + '/bower_components'));
 
 
 app.get('/alarms', function(req, res){

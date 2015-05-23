@@ -9,11 +9,9 @@
   "author": "Terminal Pixel",
   "license": "ISC",
   "dependencies": {
-    "angular": "^1.2.21",
     "body-parser": "^1.6.5",
-    "browserify-middleware": "^3.0.1",
-    "cron": "^1.0.4",
     "express": "^4.8.5",
+    "later": "^1.1.6",
     "mpd": "^1.0.2",
     "nconf": "^0.7.1",
     "socket.io": "^1.0.6"
