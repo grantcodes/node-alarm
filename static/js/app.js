@@ -1,5 +1,3 @@
-require('angular');
-
 var app = angular.module('app', []);
 
 // app.config(function($routeProvider, $locationProvider) {
@@ -35,7 +33,7 @@ app.controller('AlarmCtrl', function ($scope, $location, $http) {
         if (alarm){
             var data = {
                 alarm: alarm
-            }
+            };
             $http.post('/alarms', data)
             .success(function(data, status, headers){
                 if(data){
