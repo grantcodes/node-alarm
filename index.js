@@ -1,6 +1,6 @@
 var
     mpd = require('mpd')
-  , cmd = mpd.cmd
+  , Mopidy = require('mopidy')
   , later = require('later')
   , express = require('express')
   , bodyParser = require('body-parser')
@@ -25,14 +25,29 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var client = mpd.connect({
-    port: nconf.get('mpdPort'),
-    host: nconf.get('mpdHost')
+var mopidy = new Mopidy({
+    webSocketUrl: "ws://localhost:6680/mopidy/ws/"
 });
 
 later.date.localTime();
 
 var alarms = [];
+var playlist = null;
+
+
+var mopidyInit = function() {
+    var playlist_name = nconf.get('mpdPlaylist');
+    mopidy.playlists.getPlaylists().then(function(playlists){
+        for (var i = playlists.length - 1; i >= 0; i--) {
+            if (playlists[i].name == playlist_name) {
+                playlist = playlists[i];
+                break;
+            }
+        }
+        console.log(playlist);
+        loadAlarms();
+    });
+};
 
 
 var volRise = function() {
@@ -41,10 +56,7 @@ var volRise = function() {
     console.log('Rasing volume to ' + nconf.get('volMax'));
     var volSetter = setInterval(function(){
         vol++;
-        var volCommand = cmd('setvol', [vol]);
-        client.sendCommand(volCommand, function(err, msg) {
-            if (err) throw err;
-        });
+        mopidy.mixer.setVolume(vol);
         if (vol >= nconf.get('volMax')) {
             clearInterval(volSetter);
         }
@@ -54,28 +66,11 @@ var volRise = function() {
 var alarmOn = function(alarm) {
     console.log('Wakey Wakey!');
     console.log('Running alarm ' + alarm);
-    client.sendCommand(cmd('stop', []), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
-    client.sendCommand(cmd('clear', []), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
-    console.log('Loading playlist ' + nconf.get('mpdPlaylist'));
-    client.sendCommand(cmd('load', [nconf.get('mpdPlaylist')]), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
-
-    client.sendCommand(cmd('shuffle', []), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
-    client.sendCommand(cmd('play', []), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
+    mopidy.playback.stop();
+    mopidy.tracklist.clear();
+    mopidy.tracklist.add(playlist.tracks);
+    mopidy.tracklist.shuffle();
+    mopidy.playback.play();
     volRise();
     io.emit('alarm', { alarm: alarm });
 };
@@ -101,14 +96,7 @@ var loadAlarms = function() {
     }
 };
 
-client.on('ready', function() {
-    loadAlarms();
-});
-
-client.on('error', function(err){
-    console.log('mpd error');
-    console.log(err);
-});
+mopidy.on('state:online', mopidyInit);
 
 
 app.use('/', express.static(__dirname + '/static'));
@@ -158,10 +146,7 @@ app.post('/alarm/on', function(req, res){
 });
 
 app.post('/alarm/off', function(req, res){
-    client.sendCommand(cmd('stop', []), function(err, msg) {
-        if (err) throw err;
-        console.log(msg);
-    });
+    mopidy.playback.stop();
     res.send(true);
 });
 
