@@ -1,6 +1,5 @@
 var
-    mpd = require('mpd')
-  , Mopidy = require('mopidy')
+    Mopidy = require('mopidy')
   , later = require('later')
   , express = require('express')
   , bodyParser = require('body-parser')
@@ -44,7 +43,6 @@ var mopidyInit = function() {
                 break;
             }
         }
-        console.log(playlist);
         loadAlarms();
     });
 };
