@@ -40,10 +40,10 @@ var mopidyInit = function() {
         for (var i = playlists.length - 1; i >= 0; i--) {
             if (playlists[i].name == playlist_name) {
                 playlist = playlists[i];
+                loadAlarms();
                 break;
             }
         }
-        loadAlarms();
     });
 };
 
