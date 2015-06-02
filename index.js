@@ -16,6 +16,7 @@ nconf.defaults({
     'mpdHost': 'localhost',
     'mpdPlaylist': 'Wakeup',
     'volMax': 100,
+    'volMin': 0,
     'volRiseTime': 18000,
     'alarms': ['50 6 * * *']
 });
@@ -55,8 +56,8 @@ var mopidyInit = function() {
 
 
 var volRise = function() {
-    var vol = 0;
-    var interval = nconf.get('volRiseTime') / nconf.get('volMax');
+    var vol = nconf.get('volMin');
+    var interval = nconf.get('volRiseTime') / ( nconf.get('volMax') - vol );
     console.log('Rasing volume to ' + nconf.get('volMax'));
     var volSetter = setInterval(function(){
         vol++;
