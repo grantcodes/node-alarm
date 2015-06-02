@@ -34,18 +34,24 @@ var alarms = [];
 var playlist = null;
 
 
-var mopidyInit = function() {
+var loadPlaylist = function(cb) {
+    // TODO: Only grab the playlist if it is not already stored
     var playlist_name = nconf.get('mpdPlaylist');
     mopidy.playlists.getPlaylists().then(function(playlists){
         for (var i = playlists.length - 1; i >= 0; i--) {
             if (playlists[i].name == playlist_name) {
                 playlist = playlists[i];
-                loadAlarms();
+                cb(playlist);
                 break;
             }
         }
     });
 };
+
+var mopidyInit = function() {
+    loadPlaylist(loadAlarms);
+};
+
 
 
 var volRise = function() {
@@ -87,7 +93,9 @@ var loadAlarms = function() {
         try {
             var schedule = later.parse.cron(alarm);
             later.schedule(schedule);
-            alarms[i] = later.setInterval(alarmOn, schedule);
+            alarms[i] = later.setInterval(function(){
+                loadPlaylist(alarmOn);
+            }, schedule);
         } catch(ex) {
             console.log('invalid cron value: ' +  nconf.get('alarms')[i]);
         }
@@ -139,7 +147,9 @@ app.delete('/alarms/:alarm_index', function(req, res){
 });
 
 app.post('/alarm/on', function(req, res){
-    alarmOn('manual alarm');
+    loadPlaylist(function(){
+        alarmOn('manual alarm');
+    });
     res.send(true);
 });
 
