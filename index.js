@@ -68,16 +68,15 @@ var volRise = function() {
     }, interval);
 };
 
-var alarmOn = function(alarm) {
+var alarmOn = function() {
     console.log('Wakey Wakey!');
-    console.log('Running alarm ' + alarm);
     mopidy.playback.stop();
     mopidy.tracklist.clear();
     mopidy.tracklist.add(playlist.tracks);
     mopidy.tracklist.shuffle();
     mopidy.playback.play();
     volRise();
-    io.emit('alarm', { alarm: alarm });
+    io.emit('alarm');
 };
 
 var loadAlarms = function() {
@@ -90,15 +89,20 @@ var loadAlarms = function() {
 
     for (var i = nconf.get('alarms').length - 1; i >= 0; i--) {
         var alarm = nconf.get('alarms')[i];
-        console.log('setting alarm ' + alarm);
+        console.log('setting alarm ' + alarm.value);
         try {
-            var schedule = later.parse.cron(alarm);
-            later.schedule(schedule);
+            var schedule;
+            if (alarm.type == 'cron'){
+                schedule = later.parse.cron(alarm.value);
+            } else if (alarm.type == 'text'){
+                schedule = later.parse.text(alarm.value);
+            }
+            console.log(schedule.error);
             alarms[i] = later.setInterval(function(){
                 loadPlaylist(alarmOn);
             }, schedule);
         } catch(ex) {
-            console.log('invalid cron value: ' +  nconf.get('alarms')[i]);
+            console.log('invalid alarm value: ' +  alarm.value);
         }
     }
 };
@@ -161,4 +165,13 @@ app.post('/alarm/off', function(req, res){
 
 var server = app.listen(3000, function() {
     console.log('Listening on port %d', server.address().port);
+});
+
+
+// Arduino stuff
+var arduino = require('./arduino-control');
+
+arduino.volume(function(vol){
+    console.log(vol);
+    mopidy.mixer.setVolume(vol);
 });

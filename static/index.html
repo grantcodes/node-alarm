@@ -13,14 +13,18 @@
     <div class="alarms" ng-controller="AlarmCtrl as alarm">
         <h2>Alarms</h2>
         <ul class="alarms-list">
-            <li ng-repeat="cron in alarm.alarms track by $index">
-                <input type="text" ng-model="cron" readonly>
+            <li ng-repeat="alarm in alarm.alarms track by $index">
+                <input type="text" ng-model="alarm.value" readonly>
                 <!-- <button ng-click="update()">Update</button> -->
                 <button ng-click="alarm.delete($index)">Delete</button>
             </li>
         </ul>
         <form class="add-alarm" ng-submit="alarm.new()">
-            <input type="text" placeholder="New alarm" ng-model="alarm.newAlarm">
+            <select ng-model="alarm.newAlarm.type">
+                <option value="cron" selected="selected">Cron</option>
+                <option value="text">Text</option>
+            </select>
+            <input type="text" placeholder="New alarm" ng-model="alarm.newAlarm.value">
             <button type="submit">Add alarm</button>
         </form>
         <button ng-click="alarm.on()">Start Alarm</button>
