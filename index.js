@@ -4,7 +4,8 @@ var
   , express = require('express')
   , bodyParser = require('body-parser')
   , fs = require('fs')
-  , nconf = require('nconf');
+  , nconf = require('nconf')
+  , spark = require('spark');
 
 // Config file
 nconf.argv()
@@ -34,6 +35,11 @@ later.date.localTime();
 var alarms = [];
 var playlist = null;
 
+// Log into particle
+if (nconf.get('particleUsername') && nconf.get('particlePassword')) {
+    spark.login({ username: nconf.get('particleUsername'), password: nconf.get('particlePassword')});
+    
+}
 
 var loadPlaylist = function(cb) {
     // TODO: Only grab the playlist if it is not already stored
@@ -77,7 +83,16 @@ var alarmOn = function() {
     mopidy.playback.play();
     volRise();
     io.emit('alarm');
+    var event = spark.publishEvent('alarmOn', {});
 };
+
+spark.on('login', function() {
+  spark.onEvent('alarmOff', function(data) {
+    console.log('stopping alarm');
+    mopidy.playback.stop();
+  });
+});
+
 
 var loadAlarms = function() {
     for (var i = alarms.length - 1; i >=0; i--) {
@@ -160,6 +175,7 @@ app.post('/alarm/on', function(req, res){
 
 app.post('/alarm/off', function(req, res){
     mopidy.playback.stop();
+    var event = spark.publishEvent('alarmOff', {});
     res.send(true);
 });
 
