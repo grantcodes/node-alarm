@@ -5,6 +5,7 @@
     var board = new five.Board();
     var arduinoControl = {};
     var volumeSensor;
+    var vol;
 
     board.on("ready", function() {
 
@@ -25,7 +26,6 @@
         board.on('ready', function(){
           var volMin = parseInt(nconf.get('volMin'));
           var volMax = nconf.get('volMin');
-          var vol = nconf.get('volMax');
           volumeSensor.scale([volMin, 100]).on("data", function() {
             var prevVol = vol;
             vol = Math.round(this.value);
