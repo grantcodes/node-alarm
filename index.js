@@ -91,7 +91,8 @@ spark.on('login', function() {
     console.log('stopping alarm');
     mopidy.playback.stop();
   });
-  spark.onEvent('alarmVol', function(vol) {
+  spark.onEvent('alarmVol', function(data) {
+    var vol = parseInt(data.data);
     mopidy.mixer.setVolume(vol);
   });
 });
