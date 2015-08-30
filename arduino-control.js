@@ -29,7 +29,7 @@
           volumeSensor.scale([volMin, 100]).on("data", function() {
             var prevVol = vol;
             vol = Math.round(this.value);
-            if (vol != prevVol) {
+            if (vol > (prevVol+1) || vol < (prevVol-1)) {
               cb(vol);
             }
           });
