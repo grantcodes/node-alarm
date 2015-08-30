@@ -88,8 +88,13 @@ var alarmOn = function() {
 
 spark.on('login', function() {
   spark.onEvent('alarmOff', function(data) {
-    console.log('stopping alarm');
-    mopidy.playback.stop();
+    mopidy.playback.getState().then(function(state){
+        if (state == 'playing') {
+            mopidy.playback.pause();
+        } else {
+            mopidy.playback.resume();
+        }
+    });
   });
   spark.onEvent('alarmVol', function(data) {
     var vol = parseInt(data.data);
