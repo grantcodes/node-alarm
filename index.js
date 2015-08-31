@@ -100,6 +100,12 @@ spark.on('login', function() {
     var vol = parseInt(data.data);
     mopidy.mixer.setVolume(vol);
   });
+  spark.onEvent('alarmPrev', function(data) {
+    mopidy.playback.previous();
+  });
+  spark.onEvent('alarmNext', function(data) {
+    mopidy.playback.next();
+  });
 });
 
 
