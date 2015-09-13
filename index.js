@@ -48,11 +48,11 @@ var loadPlaylist = function(cb) {
         for (var i = playlists.length - 1; i >= 0; i--) {
             if (playlists[i].name == playlist_name) {
                 playlist = playlists[i];
-                cb(playlist);
                 break;
             }
         }
     });
+    cb(playlist);
 };
 
 var mopidyInit = function() {
